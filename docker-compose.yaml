@@ -1,15 +1,19 @@
+version: "3.8"
+
 services:
   nginx:
     image: nginx:1.13
     container_name: provectus-nginx
     restart: always
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - app
+    networks:
+      - lan_network
     deploy:
       replicas: 1
       restart_policy:
@@ -26,6 +30,8 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - lan_network
     deploy:
       replicas: 1
       restart_policy:
@@ -42,6 +48,8 @@ services:
     command: mvn clean spring-boot:run
     depends_on:
       - mysql
+    networks:
+      - lan_network
     deploy:
       replicas: 1
       restart_policy:
@@ -49,3 +57,14 @@ services:
 
 volumes:
   mysql_data:
+
+networks:
+  lan_network:
+    driver: macvlan
+    driver_opts:
+      parent: eth0   # 👈 change this to your actual network interface
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
+          gateway: 10.0.2.1
+          # no static IP here → router assigns via DHCP
