@@ -13,14 +13,10 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - app
+      - mysql
     networks:
       lan_net:
-        ipv4_address: 10.0.2.50
-      EXTERNAL_LAN:
-        ipv4_address: 10.10.10.117
-      internal_net:
-        aliases:
-          - nginx
+        ipv4_address: 172.28.94.50
 
   mysql:
     image: mysql/mysql-server:5.7
@@ -32,7 +28,9 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - internal_net
+      lan_net:
+        aliases:
+          - mysql
     restart: unless-stopped
 
   app:
@@ -48,25 +46,20 @@ services:
     depends_on:
       - mysql
     networks:
-      - internal_net
+      lan_net:
+        aliases:
+          - app
     restart: unless-stopped
 
 volumes:
   mysql_data:
 
 networks:
-  internal_net:
-    driver: bridge
-
-  EXTERNAL_LAN:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.10.10.0/24
-
   lan_net:
     driver: macvlan
+    driver_opts:
+      parent: eth0  # change to your actual host interface if needed
     ipam:
       config:
-        - subnet: 10.0.2.0/24
-          gateway: 10.0.2.1
+        - subnet: 172.28.94.0/24
+          gateway: 172.28.94.1
