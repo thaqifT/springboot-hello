@@ -1,5 +1,18 @@
 version: "2.1"
 
+networks:
+  internal_net:
+    driver: bridge
+
+  EXTERNAL_LAN:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
+
+volumes:
+  mysql_data:
+
 services:
   nginx:
     image: nginx:1.13
@@ -47,14 +60,3 @@ services:
     networks:
       - internal_net
     restart: unless-stopped
-
-volumes:
-  mysql_data:
-
-networks:
-  internal_net:
-    driver: bridge
-
-  EXTERNAL_LAN:
-    name: LAN
-    external: true
