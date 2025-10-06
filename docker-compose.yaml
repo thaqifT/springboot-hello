@@ -14,8 +14,7 @@ services:
       - app
     networks:
       lan_net:
-        ipv4_address: 10.0.2.117  # 👈 static LAN IP
-      internal_net:
+        ipv4_address: 10.0.2.117
     deploy:
       replicas: 1
       restart_policy:
@@ -33,7 +32,8 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - internal_net
+      lan_net:
+        ipv4_address: 10.0.2.118
     deploy:
       replicas: 1
       restart_policy:
@@ -41,6 +41,7 @@ services:
 
   app:
     build: ./app
+    container_name: provectus-app
     working_dir: /app
     volumes:
       - ./app:/app
@@ -51,7 +52,8 @@ services:
     depends_on:
       - mysql
     networks:
-      - internal_net
+      lan_net:
+        ipv4_address: 10.0.2.119
     deploy:
       replicas: 1
       restart_policy:
@@ -62,6 +64,4 @@ volumes:
 
 networks:
   lan_net:
-    external: true  # 👈 we already created it manually
-  internal_net:
-    driver: bridge
+    external: true
