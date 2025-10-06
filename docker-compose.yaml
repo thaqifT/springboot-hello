@@ -1,18 +1,5 @@
 version: "2.1"
 
-networks:
-  internal_net:
-    driver: bridge
-
-  EXTERNAL_LAN:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.0.2.0/24
-
-volumes:
-  mysql_data:
-
 services:
   nginx:
     image: nginx:1.13
@@ -27,7 +14,7 @@ services:
       - app
     networks:
       EXTERNAL_LAN:
-        ipv4_address: 10.0.2.117
+        ipv4_address: 10.10.10.117
       internal_net:
         aliases:
           - nginx
@@ -60,3 +47,18 @@ services:
     networks:
       - internal_net
     restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  # Private network for app + database
+  internal_net:
+    driver: bridge
+
+  # External LAN bridge (custom subnet to avoid overlap)
+  EXTERNAL_LAN:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
