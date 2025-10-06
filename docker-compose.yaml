@@ -13,7 +13,9 @@ services:
     depends_on:
       - app
     networks:
-      - lan_network
+      lan_net:
+        ipv4_address: 10.0.2.117  # 👈 static LAN IP
+      internal_net:
     deploy:
       replicas: 1
       restart_policy:
@@ -31,7 +33,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - lan_network
+      - internal_net
     deploy:
       replicas: 1
       restart_policy:
@@ -49,7 +51,7 @@ services:
     depends_on:
       - mysql
     networks:
-      - lan_network
+      - internal_net
     deploy:
       replicas: 1
       restart_policy:
@@ -59,12 +61,7 @@ volumes:
   mysql_data:
 
 networks:
-  lan_network:
-    driver: macvlan
-    driver_opts:
-      parent: eth0   # 👈 change this to your actual network interface
-    ipam:
-      config:
-        - subnet: 10.0.2.0/24
-          gateway: 10.0.2.1
-          # no static IP here → router assigns via DHCP
+  lan_net:
+    external: true  # 👈 we already created it manually
+  internal_net:
+    driver: bridge
