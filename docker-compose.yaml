@@ -56,8 +56,8 @@ volumes:
   mysql_data:
 
 networks:
-  lan_net:
-    external: true
+  internal_net:
+    driver: bridge
 
   # External LAN bridge (custom subnet to avoid overlap)
   EXTERNAL_LAN:
