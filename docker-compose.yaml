@@ -5,9 +5,6 @@ services:
     image: nginx:latest
     container_name: nginx_web
     restart: always
-    networks:
-      lan_net:
-        ipv4_address: 10.0.2.50  # <-- choose an unused IP in your subnet
     ports:
       - "80:80"
       - "443:443"
@@ -17,6 +14,8 @@ services:
     depends_on:
       - app
     networks:
+      lan_net:
+        ipv4_address: 10.0.2.50
       EXTERNAL_LAN:
         ipv4_address: 10.10.10.117
       internal_net:
@@ -59,9 +58,15 @@ networks:
   internal_net:
     driver: bridge
 
-  # External LAN bridge (custom subnet to avoid overlap)
   EXTERNAL_LAN:
     driver: bridge
     ipam:
       config:
         - subnet: 10.10.10.0/24
+
+  lan_net:
+    driver: macvlan
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
+          gateway: 10.0.2.1
