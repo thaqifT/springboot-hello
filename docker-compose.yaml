@@ -1,4 +1,5 @@
-version: "3.8"
+```
+version: "2.1"
 
 services:
   nginx:
@@ -13,12 +14,16 @@ services:
     depends_on:
       - app
     networks:
-      lan_net:
+      # Nginx joins both networks:
+      - EXTERNAL_LAN
+      - internal_net
+    # Give it a fixed LAN IP (so you can reach it from your LAN)
+    networks:
+      EXTERNAL_LAN:
         ipv4_address: 10.0.2.117
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      internal_net:
+        aliases:
+          - nginx
 
   mysql:
     image: mysql/mysql-server:5.7
@@ -27,17 +32,11 @@ services:
       MYSQL_DATABASE: root
       MYSQL_ROOT_PASSWORD: 143625
       MYSQL_ROOT_HOST: '%'
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      lan_net:
-        ipv4_address: 10.0.2.118
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      - internal_net
+    restart: unless-stopped
 
   app:
     build: ./app
@@ -52,16 +51,19 @@ services:
     depends_on:
       - mysql
     networks:
-      lan_net:
-        ipv4_address: 10.0.2.119
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      - internal_net
+    restart: unless-stopped
 
 volumes:
   mysql_data:
 
 networks:
-  lan_net:
+  # Private network for app + database
+  internal_net:
+    driver: bridge
+
+  # External LAN bridge (already existing in Portainer)
+  EXTERNAL_LAN:
+    name: LAN
     external: true
+```
